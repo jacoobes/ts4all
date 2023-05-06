@@ -1,0 +1,8 @@
+{
+  "name": "ts4all",
+  "packageManager": "yarn@3.5.1",
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "^6.1.0"
+  }
+}
