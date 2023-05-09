@@ -2,7 +2,11 @@
   "name": "ts4all",
   "packageManager": "yarn@3.5.1",
   "gypfile": true,
+  "scripts": {
+    "build": "node-gyp configure build -m"
+  },
   "dependencies": {
-    "node-addon-api": "^6.1.0"
+    "node-addon-api": "^6.1.0",
+    "node-gyp": "~9.3.1"
   }
 }
