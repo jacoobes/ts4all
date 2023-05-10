@@ -44,7 +44,7 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         }
         Napi::Value get_context_size(const Napi::CallbackInfo& info)
         {
-            return Napi::Value();
+            return Napi::Boolean::New(info.Env(), true);
         }
 
 
@@ -55,7 +55,6 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
 LM::Inference *LM::Inference::construct(
     const std::string& weights_path,
     const LM::Inference::Params& p) {
-    std::cout << "WtF";
     return new LLaMaInference(weights_path, p);
 }
 

@@ -1,2 +1,4 @@
+const { Inference } = require('bindings')('./Release/ts4all.node');
 
-//todo
+const s = new Inference();
+console.log(s)

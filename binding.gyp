@@ -14,7 +14,6 @@
         "./libjustlm/include",
         "./libjustlm/llama.cpp",
         "./libjustlm",
-
       ],
       'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS' ],
     }
