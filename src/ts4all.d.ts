@@ -18,7 +18,7 @@ interface Params {
 
 }
 
-
+//todo
 declare class Inference {
 
   constructor(path: string, params?: Partial<Params>)
