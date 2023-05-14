@@ -7,11 +7,13 @@
       "sources": [
          "./libjustlm/llama.cpp/ggml.c",
         "./libjustlm/llama.cpp/llama.cpp",
+        "./libjustlm/gptj/gptj.cpp",
         "index.cpp",
        ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
         "./libjustlm/include",
+        "./libjustlm/gptj",
         "./libjustlm/llama.cpp",
         "./libjustlm",
       ],

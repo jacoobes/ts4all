@@ -4,6 +4,7 @@
 #include "justlm.hpp"
 #include "justlm_pool.hpp"
 #include "justlm_llama.hpp"
+#include "justlm_gptj.hpp"
 
 
 class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
@@ -17,12 +18,12 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         ~InferenceWrapper(){};
         void append(const Napi::CallbackInfo& info)
         {
-            const std::string prompt;
+            std::string prompt;
             if(info[0].IsString()) 
             {
                 prompt = info[0].As<Napi::String>().Utf8Value();
             }
-            _inference.append(&prompt);
+            inference_->append(prompt);
         }
         void run(const Napi::CallbackInfo& info)
         {
@@ -47,11 +48,12 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         } 
         Napi::Value get_prompt(const Napi::CallbackInfo& info)
         {
-            return Napi::Boolean::New(info.Env(), true);
+            auto prompt = inference_->get_prompt();
+            return Napi::String::New(info.Env(), prompt);
         }
         Napi::Value get_context_size(const Napi::CallbackInfo& info)
         {
-            return Napi::Boolean::New(info.Env(), true);
+            return Napi::Number::New(info.Env(), inference_->get_context_size());
         }
 
 
@@ -59,8 +61,19 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         std::unique_ptr<LM::Inference> inference_;
 };
 
+class LMPoolWrapper : public Napi::ObjectWrap<LMPoolWrapper> {
+    public:
+        static Napi::Object Init(Napi::Env env, Napi::Object exports);
+
+        LMPoolWrapper(const Napi::CallbackInfo& info);
+        ~LMPoolWrapper(){};
+    private:
+        std::unique_ptr<LM::InferencePool> pool_;
+
+};
+
 //copied from justlm.cpp (don't know how to use that version of construct in the inference wrapper)
-LM::Inference *LM::Inference::construct(
+LM::Inference *LM::Inference::construct(const std::string &weights_path, const Params &p) {
     // Read magic
     std::ifstream f(weights_path, std::ios::binary);
     uint32_t magic;
@@ -111,31 +124,32 @@ InferenceWrapper::InferenceWrapper(const Napi::CallbackInfo& info)
 
         auto param_obj = info[1].As<Napi::Object>();
         if (param_obj.Has("seed")) {
-            //i think it implicility casts uint_32 -> signed?
-            //https://stackoverflow.com/questions/46228676/how-to-correctly-cast-uint32-t-to-unsigned
             params.seed = param_obj.Get("seed").As<Napi::Number>().Int32Value();
         }
+          //i think it implicility casts uint_32 -> signed?
+            //https://stackoverflow.com/questions/46228676/how-to-correctly-cast-uint32-t-to-unsigned
+
         if(param_obj.Has("n_threads")) {
-            params.n_threads = param_obj.Get("n_threads").As<Napi::Number>().UInt32Value();
+            params.n_threads = param_obj.Get("n_threads").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("n_ctx")) {
-            params.n_ctx = param_obj.Get("n_ctx").As<Napi::Number>().UInt32Value();
+            params.n_ctx = param_obj.Get("n_ctx").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("n_ctx_window_top_bar")) {
-            params.n_ctx_window_top_bar = param_obj.Get("n_ctx_window_top_bar").As<Napi::Number>().UInt32Value();
+            params.n_ctx_window_top_bar = param_obj.Get("n_ctx_window_top_bar").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("n_batch")) {
-            params.n_batch = param_obj.Get("n_batch").As<Napi::Number>().UInt32Value();
+            params.n_batch = param_obj.Get("n_batch").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("n_repeat_last")) {
-            params.n_repeat_last = param_obj.Get("n_repeat_last").As<Napi::Number>().UInt32Value();
+            params.n_repeat_last = param_obj.Get("n_repeat_last").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("scroll_keep")) {
-            params.scroll_keep = param_obj.Get("scroll_keep").As<Napi::Number>().UFloatValue();
+            params.scroll_keep = param_obj.Get("scroll_keep").As<Napi::Number>().FloatValue();
         }
         if(param_obj.Has("top_k")) {
             
-            params.top_k = param_obj.Get("top_k").As<Napi::Number>().UInt32Value();
+            params.top_k = param_obj.Get("top_k").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("top_p")) {
 
@@ -148,7 +162,7 @@ InferenceWrapper::InferenceWrapper(const Napi::CallbackInfo& info)
             params.repeat_penalty = param_obj.Get("repeat_penalty").As<Napi::Number>().FloatValue();
         }
         if(param_obj.Has("eos_ignores")) {
-            params.eos_ignores = param_obj.Get("eos_ignores").As<Napi::Number>().UInt32Value();
+            params.eos_ignores = param_obj.Get("eos_ignores").As<Napi::Number>().Uint32Value();
         }
         if(param_obj.Has("use_mlock")) {
             params.use_mlock = param_obj.Get("use_mlock").As<Napi::Boolean>().Value();
