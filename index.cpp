@@ -1,36 +1,7 @@
-#define LM_NOEXCEPT
-
 #include <napi.h>
 #include <iostream>
 #include <sstream>
 #include<string>
-using namespace std;
- 
-int countWords(string str)
-{
-    // Breaking input into word
-    // using string stream
-   
-    // Used for breaking words
-    stringstream s(str);
-   
-    // To store individual words
-    string word;
- 
-    int count = 0;
-    while (s >> word)
-        count++;
-    return count;
-}
- 
-// Driver code
-int main()
-{
-    string s = "geeks for geeks geeks "
-               "contribution placements";
-    cout << " Number of words are: " << countWords(s);
-    return 0;
-}
 #include "justlm.hpp"
 #include "justlm_pool.hpp"
 #include "justlm_llama.hpp"
@@ -79,11 +50,11 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         }
         void create_savestate(const Napi::CallbackInfo& info)
         {
-            
+            //todo
         }
         void restore_savestate(const Napi::CallbackInfo& info)
         {
-
+            //todo
         }
         void serialize(const Napi::CallbackInfo& info)
         {
@@ -94,7 +65,7 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         }
         void deserialize(const Napi::CallbackInfo& info)
         {
-           
+          //todo 
         } 
         Napi::Value get_prompt(const Napi::CallbackInfo& info)
         {

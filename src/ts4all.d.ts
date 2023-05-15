@@ -18,16 +18,15 @@ interface Params {
 
 }
 
-//todo
 declare class Inference {
 
   constructor(path: string, params?: Partial<Params>)
   append(info: string): void
   run(end: string, cb: (s: string) => boolean) : string
-  create_savestate(): void
-  restore_savestate(): void
+  create_savestate(): void //todo
+  restore_savestate(): void //todo
   serialize(str: string): void
-  deserialize() : void
+  deserialize() : void //todo
   get_prompt(): unknown //todo
   get_context_size() : unknown //todo
 }
