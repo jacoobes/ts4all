@@ -32,12 +32,8 @@
                 "VCCLCompilerTool": { "AdditionalOptions": [], },
             },
         }, {
+
             'defines': [
-                'HAVE_LIBPTHREAD',
-                'HAVE_PTHREAD_H',
-                'HAVE_UNISTD_H',
-                'HAVE_RAND_R',
-                'BUILDING_NODE_EXTENSION',
             ],
         }]
       ],
