@@ -26,15 +26,14 @@
         ['OS=="win"', {
             'defines': [
                 'LM_NOEXCEPT',
-                'NAPI_DISABLE_CPP_EXCEPTIONS'
+                'NAPI_DISABLE_CPP_EXCEPTIONS',
+                "__AVX2__"
             ],
             "msvs_settings": {
                 "VCCLCompilerTool": { "AdditionalOptions": [], },
             },
         }, {
 
-            'defines': [
-            ],
         }]
       ],
     },
