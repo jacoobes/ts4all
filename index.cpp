@@ -1,10 +1,39 @@
 #define LM_NOEXCEPT
 
 #include <napi.h>
+#include <iostream>
+#include <sstream>
+#include<string>
+using namespace std;
+ 
+int countWords(string str)
+{
+    // Breaking input into word
+    // using string stream
+   
+    // Used for breaking words
+    stringstream s(str);
+   
+    // To store individual words
+    string word;
+ 
+    int count = 0;
+    while (s >> word)
+        count++;
+    return count;
+}
+ 
+// Driver code
+int main()
+{
+    string s = "geeks for geeks geeks "
+               "contribution placements";
+    cout << " Number of words are: " << countWords(s);
+    return 0;
+}
 #include "justlm.hpp"
 #include "justlm_pool.hpp"
 #include "justlm_llama.hpp"
-#include "justlm_gptj.hpp"
 
 
 class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
@@ -25,13 +54,32 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
             }
             inference_->append(prompt);
         }
-        void run(const Napi::CallbackInfo& info)
+//std::string_view end, const std::function<bool (const char *)> &on_tick = nullptr
+        Napi::Value run(const Napi::CallbackInfo& info)
         {
-
+            auto env = info.Env();
+            std::string_view eend;
+            if(info[0].IsString()) {
+                eend = std::string_view(info[0].As<Napi::String>().Utf8Value());
+            } else {
+                Napi::Error::New(env, "invalid string argument").ThrowAsJavaScriptException();
+                return Napi::String::New(env, "Error");
+            }
+            Napi::Value callback = Napi::Value();
+            std::function<bool(const char*)> mycb = nullptr;
+            if(info[1].IsFunction()) {
+                callback = info[1].As<Napi::Function>();
+                mycb = [=](const char* generated) {
+                    Napi::HandleScope scope(env);
+                    Napi::Boolean result = Napi::Boolean::New(env, callback.As<Napi::Function>().Call({ Napi::String::New(env, generated) }).As<Napi::Boolean>());
+                    return result.Value();
+                };
+            }
+            return Napi::String::New(env, inference_->run(eend, mycb));
         }
         void create_savestate(const Napi::CallbackInfo& info)
         {
-
+            
         }
         void restore_savestate(const Napi::CallbackInfo& info)
         {
@@ -39,8 +87,10 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
         }
         void serialize(const Napi::CallbackInfo& info)
         {
-
-
+            if(info[0].IsString()) {
+                std::stringstream   s(info[0].As<Napi::String>().Utf8Value()); 
+                inference_->serialize(s);
+            } 
         }
         void deserialize(const Napi::CallbackInfo& info)
         {
@@ -72,20 +122,9 @@ class LMPoolWrapper : public Napi::ObjectWrap<LMPoolWrapper> {
 
 };
 
-//copied from justlm.cpp (don't know how to use that version of construct in the inference wrapper)
 LM::Inference *LM::Inference::construct(const std::string &weights_path, const Params &p) {
-    // Read magic
-    std::ifstream f(weights_path, std::ios::binary);
-    uint32_t magic;
-    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     // Create model
-    if (magic == 0x67676d6c) {
-        f.seekg(0);
-        return new GPTJInference(weights_path, f, p);
-    } else {
-        f.close();
-        return new LLaMaInference(weights_path, p);
-    }
+    return new LLaMaInference(weights_path, p);
 }
 
 

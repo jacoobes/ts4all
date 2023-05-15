@@ -23,10 +23,10 @@ declare class Inference {
 
   constructor(path: string, params?: Partial<Params>)
   append(info: string): void
-  run() : void
+  run(end: string, cb: (s: string) => boolean) : string
   create_savestate(): void
   restore_savestate(): void
-  serialize(): void
+  serialize(str: string): void
   deserialize() : void
   get_prompt(): unknown //todo
   get_context_size() : unknown //todo

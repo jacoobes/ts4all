@@ -7,7 +7,6 @@
       "sources": [
          "./libjustlm/llama.cpp/ggml.c",
         "./libjustlm/llama.cpp/llama.cpp",
-        "./libjustlm/gptj/gptj.cpp",
         "index.cpp",
        ],
       "include_dirs": [

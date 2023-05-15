@@ -3,7 +3,8 @@
   "packageManager": "yarn@3.5.1",
   "gypfile": true,
   "scripts": {
-    "build": "node precompile.mjs && node-gyp configure build -m"
+    "build:dev": "node precompile.mjs && node-gyp configure build -m --debug",
+    "build:release": "node precompile.mjs && node-gyp configure build -m --release"
   },
   "dependencies": {
     "bindings": "^1.5.0",
