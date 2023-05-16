@@ -1,11 +1,14 @@
 #include <napi.h>
 #include <iostream>
+#include <fstream>
 #include <sstream>
-#include<string>
+#include <string>
+
 #include "justlm.hpp"
 #include "justlm_pool.hpp"
 #include "justlm_llama.hpp"
-
+#include "justlm_gptj.hpp"
+#include "gptj/gptj.hpp"
 
 class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
     public:
@@ -25,7 +28,6 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
             }
             inference_->append(prompt);
         }
-//std::string_view end, const std::function<bool (const char *)> &on_tick = nullptr
         Napi::Value run(const Napi::CallbackInfo& info)
         {
             auto env = info.Env();
@@ -93,12 +95,21 @@ class LMPoolWrapper : public Napi::ObjectWrap<LMPoolWrapper> {
 
 };
 
+//copied from justlm.cpp because i  dont know how to use that construct in my bidnings
 LM::Inference *LM::Inference::construct(const std::string &weights_path, const Params &p) {
+    // Read magic
+    std::ifstream f(weights_path, std::ios::binary);
+    uint32_t magic;
+    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     // Create model
-    return new LLaMaInference(weights_path, p);
+    if (magic == 0x67676d6c) {
+        f.seekg(0);
+        return new GPTJInference(weights_path, f, p);
+    } else {
+        f.close();
+        return new LLaMaInference(weights_path, p);
+    }
 }
-
-
 Napi::Object InferenceWrapper::Init(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "Inference", {
         InstanceMethod("append", &InferenceWrapper::append),

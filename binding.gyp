@@ -7,12 +7,13 @@
       "sources": [
          "./libjustlm/llama.cpp/ggml.c",
         "./libjustlm/llama.cpp/llama.cpp",
+        './libjustlm/g4a-common.cpp',
+        './libjustlm/gptj/gptj.cpp',
         "index.cpp",
        ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
         "./libjustlm/include",
-        "./libjustlm/gptj",
         "./libjustlm/llama.cpp",
         "./libjustlm",
       ],
@@ -30,7 +31,7 @@
                 "__AVX2__"
             ],
             "msvs_settings": {
-                "VCCLCompilerTool": { "AdditionalOptions": [], },
+                "VCCLCompilerTool": { "AdditionalOptions": ["/std:c++20"], },
             },
         }, {
 
