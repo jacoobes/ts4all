@@ -1,5 +1,7 @@
+/// <reference types="node" />
 declare module "ts4all";
 
+//!!! defaults and/or types from c++ structs are included
 interface Params {
    seed: number; // RNG seed
    n_threads: number //= 0;
@@ -18,17 +20,27 @@ interface Params {
 
 }
 
+interface Savestate {
+    buf: Buffer; //vector<uint8_t>
+    tokens: number[];  //vector<int>
+    prompt: string // std::string 
+    //void *ctx = nullptr;
+    //bool is_valid() const {
+//     return ctx != nullptr;
+ //   }
+} 
+
 declare class Inference {
 
   constructor(path: string, params?: Partial<Params>)
   append(info: string): void
   run(end: string, cb: (s: string) => boolean) : string
-  create_savestate(): void //todo
+  create_savestate(s: Savestate): boolean
   restore_savestate(): void //todo
   serialize(str: string): void
   deserialize() : void //todo
-  get_prompt(): unknown //todo
-  get_context_size() : unknown //todo
+  get_prompt(): string
+  get_context_size() : number 
 }
 
 

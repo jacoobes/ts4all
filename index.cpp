@@ -1,9 +1,10 @@
 #include <napi.h>
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include "g4a-common.hpp"
 #include "justlm.hpp"
 #include "justlm_pool.hpp"
 #include "justlm_llama.hpp"
@@ -50,13 +51,52 @@ class InferenceWrapper : public Napi::ObjectWrap<InferenceWrapper> {
             }
             return Napi::String::New(env, inference_->run(eend, mycb));
         }
-        void create_savestate(const Napi::CallbackInfo& info)
+        bool create_savestate(const Napi::CallbackInfo& info)
         {
-            //todo
+            auto env = info.Env();
+            
+            if(info[0].IsObject())
+            {
+                auto obj = info[0].As<Napi::Object>();
+
+                LM::Inference::Savestate& save_state;
+                auto js_buf = obj.Get("buf").As<Napi::Buffer<uint8_t>>();
+                uint8_t* inputData = js_buf.Data();
+                size_t inputLength = js_buf.Length();
+
+                std::vector<uint8_t> cpp_buf(inputData, inputData + inputLength);
+                save_state.buf = cpp_buf;
+                
+                auto js_tokens = obj.Get("tokens").As<Napi::Array>();
+                uint32_t length = js_tokens.Length();
+                std::vector<int> outputVector;
+                outputVector.reserve(length);
+
+                for (uint32_t i = 0; i < length; i++) 
+                {
+                  Napi::Value element = inputArray.Get(i);
+                  if (!element.IsNumber()) 
+                  {
+                    Napi::TypeError::New(env, "Array elements must be numbers").ThrowAsJavaScriptException();
+                    return;
+                  }
+                  int convertedValue = element.As<Napi::Number>().Int32Value();
+                  outputVector.push_back(convertedValue);
+                }
+                save_state.tokens = outputVector;
+                save_state.prompt = obj.Get("prompt").As<Napi::String>().Utf8Value();
+                
+                return inference_->create_savestate(save_state);
+            } 
+            else {
+                Napi::TypeError::New(env, "Recieved a non Savestate for create_savestate").ThrowAsJavaScriptException();
+                return false;
+            }
+           
         }
         void restore_savestate(const Napi::CallbackInfo& info)
         {
-            //todo
+            
         }
         void serialize(const Napi::CallbackInfo& info)
         {
